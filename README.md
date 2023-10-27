@@ -2,4 +2,6 @@
 
 Android application to use Google Map api visualized GPS position.
 
-This app return your speed in km/h and knot
+This app return your speed in km/h and knot.
+
+Gradle 8
