@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Fond du cercle extérieur -->
+
+    <item android:drawable="@android:color/transparent">
+        <shape
+            android:shape="oval">
+            <solid android:color="#BC0B0B"/> <!-- Couleur de l'arrière-plan (par exemple, orange) -->
+        </shape>
+    </item>
+    
+    <!-- Cercle intérieur blanc (pour le numéro de limitation de vitesse) -->
+    <item android:top="10dp" android:bottom="10dp" android:left="10dp" android:right="10dp">
+        <shape
+            android:shape="oval">
+            <solid android:color="#FFFFFF"/> <!-- Couleur du cercle intérieur (blanc) -->
+        </shape>
+    </item>
+</layer-list>
+
