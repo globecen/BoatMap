@@ -66,4 +66,4 @@ This project is open-source and licensed under the [License Name]. For more deta
 
 ## Contributing
 
-Contributions are welcome. Feel free to [fork the repository](https://github.com/globecen/BoatMap) and submit pull requests.
+Contributions are welcome. Feel free to [fork the repository](https://github.com/globecen/BoatMap/fork) and submit pull requests.
