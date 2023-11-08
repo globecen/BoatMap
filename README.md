@@ -37,7 +37,7 @@ The BoatMap Android Application is a location-based Android app designed for boa
 ## Screenshots
 
 ![App](App.png)
-
+![App](AppDetails.png)
 ## Technologies Used
 
 - Java
