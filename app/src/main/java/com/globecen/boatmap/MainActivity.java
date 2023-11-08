@@ -1,50 +1,75 @@
 package com.globecen.boatmap;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-
+import org.osmdroid.views.overlay.Marker;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import org.osmdroid.config.Configuration;
+import org.osmdroid.tileprovider.IRegisterReceiver;
+import org.osmdroid.tileprovider.tilesource.ITileSource;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.views.MapView;
+import org.osmdroid.util.GeoPoint;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapView;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.widget.CompoundButton;
+import android.widget.Toast;
+import android.widget.Switch;
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
-    private GoogleMap googleMap;
-    private Marker userLocationMarker;
+import java.io.File;
+
+public class MainActivity extends AppCompatActivity implements IRegisterReceiver {
 
     private MapView mapView;
     private Button speedButton;
-    private double speedValue = 0.0; // Vitesse initiale
-    private boolean displayInKnots = true; // Unité initiale (nœuds)
+    private double speedValue = 0.0;
+    private boolean displayInKnots = true;
     private LocationManager locationManager;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private Button locationButton;
-
     private Location userLocation;
+    private Switch switchMapSource; // Add this line
+    private static final int REQUEST_CODE_PICK_MBTILES = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialize the location manager
+        Configuration.getInstance().load(this, getPreferences(MODE_PRIVATE));
+        mapView = findViewById(R.id.mapView);
+
+        // Initialize tileDir here
+        File tileDir = new File(getExternalFilesDir(null), "osmdroid");
+
+        mapView.setTileSource(TileSourceFactory.MAPNIK);
+        mapView.setBuiltInZoomControls(true);
+
+        switchMapSource = findViewById(R.id.switchMapSource); // Initialize the switch
+        switchMapSource.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    // Use offline map source
+                    switchToOfflineMap();
+                } else {
+                    // Use online map source
+                    switchToOnlineMap();
+                }
+            }
+        });
+
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
-        // Request location updates
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
@@ -60,50 +85,97 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View v) {
                 if (userLocation != null) {
-                    LatLng userLatLng = new LatLng(userLocation.getLatitude(), userLocation.getLongitude());
-                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, 15)); // Zoom to user's location
+                    GeoPoint userGeoPoint = new GeoPoint(userLocation.getLatitude(), userLocation.getLongitude());
+                    mapView.getController().setCenter(userGeoPoint);
+                    mapView.getController().setZoom(18);
                 }
             }
         });
     }
 
+    private void switchToOfflineMap() {
+        // Set the directory where offline map tiles are stored
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*"); // You may want to be more specific here.
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(intent, REQUEST_CODE_PICK_MBTILES);
+    }
+    private void addMarkerToMap(double latitude, double longitude, float speed) {
+        GeoPoint point = new GeoPoint(latitude, longitude); // Create a point with the specified coordinates
+        Marker startMarker = new Marker(mapView); // Create a new Marker object
+        startMarker.setPosition(point); // Set the marker's position to the point
+        startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM); // Set the anchor point of the marker icon
+        startMarker.setIcon(getResources().getDrawable(R.drawable.ic_locate_me)); // Set your custom icon here
+        startMarker.setTitle("X: " +latitude+ " Y: " +longitude + "     speed (knot): "+speed*1.94384); // Optionally set a title for the marker
+
+        mapView.getOverlays().add(startMarker); // Add the marker to the map overlays
+        mapView.invalidate(); // Refresh the map to display the marker
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_PICK_MBTILES && resultCode == RESULT_OK) {
+            if (data != null) {
+                Uri selectedFile = data.getData();
+                loadMBTiles(selectedFile); // This method will handle loading of MBTiles
+            }
+        }
+    }
+    private void loadMBTiles(Uri fileUri) {
+        try {
+            // You'll need to implement the logic to convert Uri to actual file path if needed.
+            File mbTileFile = new File(fileUri.getPath());
+
+            // Use an MBTilesTileSource, assuming you have such a class that extends BitmapTileSourceBase.
+            ITileSource tileSource = new MBTilesTileSource(this, mbTileFile.getName(), 0, 19, 256, ".png");
+            mapView.setTileSource(tileSource);
+
+            // Update the map center and zoom level as needed
+            mapView.getController().setZoom(18); // Example zoom level
+        } catch (Exception e) {
+            Toast.makeText(this, "Failed to load MBTiles file", Toast.LENGTH_LONG).show();
+            e.printStackTrace();
+        }
+    }
+
+
+    private void switchToOnlineMap() {
+        mapView.setTileSource(TileSourceFactory.MAPNIK);
+        mapView.getTileProvider().clearTileCache(); // Clear the tile cache
+
+        // You can also update the map center and zoom level as needed
+        mapView.getController().setZoom(18); // Example zoom level
+    }
     private void initMapView() {
         mapView = findViewById(R.id.mapView);
-        mapView.onCreate(null);
-        mapView.getMapAsync(this);
+        mapView.setTileSource(TileSourceFactory.MAPNIK);
+        mapView.setBuiltInZoomControls(true);
     }
 
     private void initLocationUpdates() {
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
+        mapView.getController().setZoom(18);
+        mapView.getController().setCenter(new GeoPoint(0, 0));
+
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
-                // Update the speed value based on the new location data
-                double speedMetersPerSecond = location.getSpeed(); // Speed in meters per second
+                double speedMetersPerSecond = location.getSpeed();
 
-                // You can use this method to calculate the speed value in knots or km/h.
                 if (displayInKnots) {
-                    speedValue = speedMetersPerSecond * 1.94384; // Convertir m/s en nœuds
+                    speedValue = speedMetersPerSecond * 1.94384;
                 } else {
-                    speedValue = speedMetersPerSecond * 3.6; // Convertir m/s en km/h
+                    speedValue = speedMetersPerSecond * 3.6;
                 }
 
-                // Update the user's location
                 userLocation = location;
-
-                // Update the user location marker
-                LatLng userLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-                userLocationMarker.setPosition(userLatLng);
-                userLocationMarker.setVisible(true);
+                addMarkerToMap(location.getLatitude(), location.getLongitude(), location.getSpeed());
+                GeoPoint userGeoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
+                mapView.getController().setCenter(userGeoPoint);
 
                 updateSpeedButtonText();
             }
@@ -125,32 +197,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
-    // Gérer le clic sur le bouton
     public void onSpeedButtonClick(View view) {
-        // Basculer entre les nœuds et les km/h
         displayInKnots = !displayInKnots;
         updateSpeedButtonText();
     }
 
-    // Mettre à jour le texte sur le bouton de vitesse
     private void updateSpeedButtonText() {
-        speedButton.setText(String.format("%.2f %s", speedValue, displayInKnots ? "nœuds" : "km/h"));
-    }
-
-    @Override
-    public void onMapReady(GoogleMap map) {
-        googleMap = map;
-        // Set up the initial map camera position
-        LatLng initialPosition = new LatLng(0, 0);
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(initialPosition, 10));
-
-        // Create a marker for the user's location (initially hidden)
-        userLocationMarker = googleMap.addMarker(new MarkerOptions()
-                .position(initialPosition)
-                .title("My Location")
-                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_locate_me)) // Use the custom icon
-                .visible(false));  // Initially set to invisible
-
+        speedButton.setText(String.format("%.2f %s", speedValue, displayInKnots ? "knots" : "km/h"));
     }
 
     @Override
@@ -168,15 +221,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mapView.onDestroy();
     }
 
     @Override
     public void onLowMemory() {
         super.onLowMemory();
-        mapView.onLowMemory();
     }
-    // Autre code pour gérer les mises à jour de localisation et les données GPS
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -185,7 +235,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 initMapView();
                 initLocationUpdates();
+            } else {
+                Toast.makeText(this, "Location permission denied. Unable to access your location.", Toast.LENGTH_LONG).show();
             }
         }
+    }
+
+    @Override
+    public void destroy() {
+
+    }
+
+    @Override
+    public void onPointerCaptureChanged(boolean hasCapture) {
+        super.onPointerCaptureChanged(hasCapture);
     }
 }

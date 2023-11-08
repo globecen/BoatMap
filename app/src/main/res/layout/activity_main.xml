@@ -3,47 +3,81 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:ignore="ExtraText">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/relativeLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".MainActivity">
-        <com.google.android.gms.maps.MapView
+        <!-- MapView en arrière-plan -->
+        <org.osmdroid.views.MapView
             android:id="@+id/mapView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:name="BoatMap.GoogleMapView" />
-        <!-- This is the Button definition -->
-
-        <Button
-            android:id="@+id/speedButton"
-            style="@style/Widget.AppCompat.Button.Colored"
-            android:layout_width="122dp"
-            android:layout_height="119dp"
-            android:layout_gravity="center"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="556dp"
-            android:background="@drawable/rounder_speed_limit_button"
-            android:gravity="center"
-            android:onClick="onSpeedButtonClick"
-            android:text="speed"
-            android:textColor="#FFFEFE"
-            android:textSize="20sp"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="@+id/buttonsLayout"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <Button
-            android:id="@+id/locationButton"
-            android:layout_width="wrap_content"
+        <!-- Premier LinearLayout en haut -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:layout_marginEnd="4dp"
-            android:layout_marginBottom="24dp"
-            android:text="Locate Me"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            android:orientation="horizontal"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+                <Switch
+                    android:id="@+id/switchMapSource"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Use Offline Map" />
+
+                <Space
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <!-- Replace the "Button" with a "Switch" element here -->
+        </LinearLayout>
+
+        <!-- Deuxième LinearLayout en bas -->
+        <LinearLayout
+            android:id="@+id/buttonsLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+                <Button
+                    android:id="@+id/speedButton"
+                    style="@style/RoundSpeedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="119dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/rounder_speed_limit_button"
+                    android:gravity="center"
+                    android:text="speed"
+                    android:textColor="#FFFEFE"
+                    android:textSize="20sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/locationButton"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+
+                <Space
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <Button
+                    android:id="@+id/locationButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_margin="16dp"
+                    android:text="Locate Me"
+                    tools:ignore="MissingConstraints" />
+        </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

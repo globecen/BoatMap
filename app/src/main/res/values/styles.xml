@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="RoundSpeedButton">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:background">@drawable/rounder_speed_limit_button</item>
+        <item name="android:gravity">center</item>
+        <item name="android:onClick">onSpeedButtonClick</item>
+        <item name="android:text">speed</item>
+        <item name="android:textColor">#FFFEFE</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+</resources>
