@@ -28,7 +28,7 @@ jobs:
       uses: actions/create-release@v1
       with:
         files: app/build/outputs/apk/release/*.apk  # Update with your build artifacts location
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.BOATMAPTOKEN }}
 
     - name: Upload Release
       id: upload-release-asset
@@ -36,7 +36,7 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: app/build/outputs/apk/release/*.apk  # Update with your build artifacts location
-        asset_name: YourAppName-Release.apk  # Change the name as needed
+        asset_name: Boatmap-Release.apk  # Change the name as needed
         asset_content_type: application/vnd.android.package-archive
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.BOATMAPTOKEN }}
