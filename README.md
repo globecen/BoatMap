@@ -62,7 +62,7 @@ This project was created as a part of [mention the context or organization] by [
 
 ## License
 
-This project is open-source and licensed under the [License Name]. For more details, see the [LICENSE.md](link-to-license-file) file.
+This project is open-source and licensed under the [License Name]. For more details, see the [LICENSE.md](LICENSE.md) file.
 
 ## Contributing
 
