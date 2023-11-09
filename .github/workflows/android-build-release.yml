@@ -5,9 +5,6 @@ on:
     branches:
       - master  # Change to your main branch name
 
-permissions:
-  contents: write  # Add write permission for contents
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -28,32 +25,12 @@ jobs:
         ./gradlew assembleRelease
       working-directory: ./  # Assuming gradlew is in the root directory
 
-    - name: Get App VersionName
-      id: get_version_name
-      run: |
-        echo "VERSION_NAME=$(grep 'versionName' app/build.gradle | sed -n 's/.*"\(.*\)".*/\1/p')" >> $GITHUB_ENV
-      shell: bash
-
-    - name: Configure Git user identity
-      run: |
-        git config --global user.email "you@example.com"
-        git config --global user.name "Your Name"
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Create and Push Tag
-      run: |
-        TAG_NAME="v1.0.0"  # Replace with the versionName from your build.gradle
-        git tag -a $TAG_NAME -m "Version $TAG_NAME"
-        git push origin $TAG_NAME
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
     - name: Create Release
       id: create_release
       uses: softprops/action-gh-release@v1
       with:
         files: app/build/outputs/apk/release/*.apk  # Update with your build artifacts location
+        tag_name: v1.0.0  # Replace with the existing tag name you want to use
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
