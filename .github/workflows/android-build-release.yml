@@ -30,6 +30,12 @@ jobs:
       run: |
         echo "VERSION_NAME=$(grep 'versionName' app/build.gradle | sed -n 's/.*"\(.*\)".*/\1/p')" >> $GITHUB_ENV
       shell: bash
+    - name: Configure Git user identity
+      run: |
+        git config --global user.email "julien.legrand.pro@gmail.com"
+        git config --global user.name "globecen"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Create and Push Tag
       run: |
@@ -38,6 +44,7 @@ jobs:
         git push origin $TAG_NAME
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
         
     - name: Create Release
       id: create_release
