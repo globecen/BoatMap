@@ -19,15 +19,11 @@ jobs:
         java-version: '11'
         distribution: 'adopt'
 
-    - name: Verify Gradle Wrapper
-      run: |
-        chmod +x ./gradlew
-      working-directory: ./app  # Change to your app's directory
-
     - name: Build and package Android app
       run: |
+        chmod +x ./gradlew  # Ensure execute permission
         ./gradlew assembleRelease
-      working-directory: ./app  # Change to your app's directory
+      working-directory: ./  # Assuming gradlew is in the root directory
 
     - name: Create Release
       id: create_release
