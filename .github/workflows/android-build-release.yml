@@ -45,7 +45,7 @@ jobs:
         id: check_tag
         run: |
           if git rev-parse --quiet --verify "refs/tags/1.0.0"; then
-            echo "Tag 1.0.0 already exists, skipping tag creation."
+            echo "Tag 1.0.0 already exists, skipping tag creation and push."
             echo "TAG_EXISTS=true" >> $GITHUB_ENV
           fi
         continue-on-error: true
