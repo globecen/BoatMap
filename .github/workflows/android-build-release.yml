@@ -16,12 +16,12 @@ jobs:
     - name: Set up JDK
       uses: actions/setup-java@v2
       with:
-        java-version: '11'
+        java-version: '17'  # Use Java 17
         distribution: 'adopt'
 
     - name: Build and package Android app
       run: |
-        chmod +x ./gradlew  # Ensure execute permission
+        chmod +x ./gradlew
         ./gradlew assembleRelease
       working-directory: ./  # Assuming gradlew is in the root directory
 
