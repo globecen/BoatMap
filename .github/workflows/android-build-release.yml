@@ -43,7 +43,7 @@ jobs:
 
     - name: Create and Push Tag
       run: |
-        TAG_NAME="v1.0.0"  # Replace with the versionName from your build.gradle
+        TAG_NAME="v1.0.1"  # Use a different tag name
         git tag -a $TAG_NAME -m "Version $TAG_NAME"
         git push origin $TAG_NAME
       env:
