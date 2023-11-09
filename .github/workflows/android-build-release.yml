@@ -70,7 +70,6 @@ jobs:
         working-directory: ./  # Assuming gradlew is in the root directory
 
       - name: Create Release
-        if: env.TAG_EXISTS != 'true'
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
