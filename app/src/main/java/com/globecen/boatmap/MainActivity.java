@@ -1,5 +1,6 @@
 package com.globecen.boatmap;
 
+import android.app.assist.AssistStructure;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -36,7 +37,9 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
     private LocationManager locationManager;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private Button locationButton;
+    private Marker userMarker;
     private Location userLocation;
+    private Switch switchAddMarker;
     private Switch switchMapSource; // Add this line
     private static final int REQUEST_CODE_PICK_MBTILES = 2;
 
@@ -47,12 +50,26 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
 
         Configuration.getInstance().load(this, getPreferences(MODE_PRIVATE));
         mapView = findViewById(R.id.mapView);
-
+        userMarker = new Marker(mapView);
+        userMarker.setIcon(getResources().getDrawable(R.drawable.ic_locate_me));
         // Initialize tileDir here
         File tileDir = new File(getExternalFilesDir(null), "osmdroid");
-
+        mapView.getOverlays().add(userMarker);
         mapView.setTileSource(TileSourceFactory.MAPNIK);
         mapView.setBuiltInZoomControls(true);
+
+        switchAddMarker = findViewById(R.id.switchAddMarker);
+        switchAddMarker.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                // Handle the switch state change
+                if (isChecked) {
+                    // Switch is ON, so you can add markers to the map
+                } else {
+                    // Switch is OFF, so you should not add markers to the map
+                }
+            }
+        });
 
         switchMapSource = findViewById(R.id.switchMapSource); // Initialize the switch
         switchMapSource.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -76,6 +93,9 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
         } else {
             initMapView();
             initLocationUpdates();
+
+            // Center the map on the user's location when the activity is created
+            centerMapOnUserLocation();
         }
 
         speedButton = findViewById(R.id.speedButton);
@@ -93,6 +113,15 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
         });
     }
 
+    // Add this method to center the map on the user's location
+    private void centerMapOnUserLocation() {
+        if (userLocation != null) {
+            GeoPoint userGeoPoint = new GeoPoint(userLocation.getLatitude(), userLocation.getLongitude());
+            mapView.getController().setCenter(userGeoPoint);
+            mapView.getController().setZoom(18);
+        }
+    }
+
     private void switchToOfflineMap() {
         // Set the directory where offline map tiles are stored
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -101,15 +130,15 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
         startActivityForResult(intent, REQUEST_CODE_PICK_MBTILES);
     }
     private void addMarkerToMap(double latitude, double longitude, float speed) {
-        GeoPoint point = new GeoPoint(latitude, longitude); // Create a point with the specified coordinates
-        Marker startMarker = new Marker(mapView); // Create a new Marker object
-        startMarker.setPosition(point); // Set the marker's position to the point
-        startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM); // Set the anchor point of the marker icon
-        startMarker.setIcon(getResources().getDrawable(R.drawable.ic_locate_me)); // Set your custom icon here
-        startMarker.setTitle("X: " +latitude+ " Y: " +longitude + "     speed (knot): "+speed*1.94384); // Optionally set a title for the marker
 
-        mapView.getOverlays().add(startMarker); // Add the marker to the map overlays
-        mapView.invalidate(); // Refresh the map to display the marker
+            GeoPoint point = new GeoPoint(latitude, longitude);
+            Marker startMarker = new Marker(mapView);
+            startMarker.setPosition(point);
+            startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+            startMarker.setIcon(getResources().getDrawable(R.drawable.placeholder_filled_point));
+            startMarker.setTitle("X: " + latitude + " Y: " + longitude + " speed (knot): " + speed * 1.94384);
+            mapView.getOverlays().add(startMarker);
+            mapView.invalidate();
     }
 
     @Override
@@ -173,10 +202,16 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
                 }
 
                 userLocation = location;
-                addMarkerToMap(location.getLatitude(), location.getLongitude(), location.getSpeed());
+                if (userMarker != null) {
+                    userMarker.setPosition(new GeoPoint(location.getLatitude(), location.getLongitude()));
+                    mapView.invalidate();
+                }
                 GeoPoint userGeoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
                 mapView.getController().setCenter(userGeoPoint);
 
+                if (switchAddMarker.isChecked()) {
+                    addMarkerToMap(location.getLatitude(), location.getLongitude(), location.getSpeed());
+                }
                 updateSpeedButtonText();
             }
 
@@ -197,11 +232,6 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
         });
     }
 
-    public void onSpeedButtonClick(View view) {
-        displayInKnots = !displayInKnots;
-        updateSpeedButtonText();
-    }
-
     private void updateSpeedButtonText() {
         speedButton.setText(String.format("%.2f %s", speedValue, displayInKnots ? "knots" : "km/h"));
     }
@@ -211,7 +241,10 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
         super.onResume();
         mapView.onResume();
     }
-
+    public void onSpeedButtonClick(View view) {
+        displayInKnots = !displayInKnots;
+        updateSpeedButtonText();
+    }
     @Override
     public void onPause() {
         super.onPause();

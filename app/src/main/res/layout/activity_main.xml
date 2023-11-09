@@ -35,6 +35,12 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1" />
+                <Switch
+                    android:id="@+id/switchAddMarker"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Add Marker"
+                    android:checked="false" />
 
                 <!-- Replace the "Button" with a "Switch" element here -->
         </LinearLayout>
