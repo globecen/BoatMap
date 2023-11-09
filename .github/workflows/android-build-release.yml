@@ -41,12 +41,23 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Check if Tag Exists
+        id: check_tag
+        run: |
+          if git rev-parse --quiet --verify "refs/tags/1.0.0"; then
+            echo "Tag 1.0.0 already exists, skipping tag creation."
+            echo "TAG_EXISTS=true" >> $GITHUB_ENV
+          fi
+        continue-on-error: true
+
       - name: Create Git Tag
+        if: env.TAG_EXISTS != 'true'
         run: git tag -a 1.0.0 -m "Release version 1.0.0"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push Git Tag
+        if: env.TAG_EXISTS != 'true'
         run: git push origin 1.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
