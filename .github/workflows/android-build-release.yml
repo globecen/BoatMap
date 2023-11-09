@@ -33,12 +33,12 @@ jobs:
 
     - name: Create and Push Tag
       run: |
-        git tag -a ${{ env.VERSION_NAME }} -m "Version ${{ env.VERSION_NAME }}"
-        git push origin ${{ env.VERSION_NAME }}
+        TAG_NAME="v1.0.0"  # Replace with the versionName from your build.gradle
+        git tag -a $TAG_NAME -m "Version $TAG_NAME"
+        git push origin $TAG_NAME
       env:
-        VERSION_NAME: ${{ steps.get_version_name.outputs.VERSION_NAME }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+        
     - name: Create Release
       id: create_release
       uses: softprops/action-gh-release@v1
