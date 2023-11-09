@@ -43,7 +43,7 @@ jobs:
 
     - name: Create Release
       id: create_release
-      uses: softprops/action-gh-release@v1.0.0
+      uses: softprops/action-gh-release@1.0.0
       with:
         files: app/build/outputs/apk/release/*.apk
       env:
