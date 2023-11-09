@@ -43,9 +43,9 @@ jobs:
 
     - name: Create Release
       id: create_release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v1.0.0
       with:
-        files: app/build/outputs/apk/release/*.apk  # Update with your build artifacts location
+        files: app/build/outputs/apk/release/*.apk
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
