@@ -25,6 +25,12 @@ jobs:
         ./gradlew assembleRelease
       working-directory: ./  # Assuming gradlew is in the root directory
 
+    - name: Create Tag
+      run: |
+        git tag -a v1.0 -m "Version 1.0"  # Create a tag (you can use a version number)
+        git push --follow-tags  # Push the tag to GitHub
+      working-directory: ./  # Assuming you want to tag the root directory
+
     - name: Create Release
       id: create_release
       uses: softprops/action-gh-release@v1
