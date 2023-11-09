@@ -25,11 +25,19 @@ jobs:
         ./gradlew assembleRelease
       working-directory: ./  # Assuming gradlew is in the root directory
 
-    - name: Create Tag
+    - name: Get App VersionName
+      id: get_version_name
       run: |
-        git tag -a v1.0 -m "Version 1.0"  # Create a tag (you can use a version number)
-        git push --follow-tags  # Push the tag to GitHub
-      working-directory: ./  # Assuming you want to tag the root directory
+        echo "VERSION_NAME=$(grep 'versionName' app/build.gradle | sed -n 's/.*"\(.*\)".*/\1/p')" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Create and Push Tag
+      run: |
+        git tag -a ${{ env.VERSION_NAME }} -m "Version ${{ env.VERSION_NAME }}"
+        git push origin ${{ env.VERSION_NAME }}
+      env:
+        VERSION_NAME: ${{ steps.get_version_name.outputs.VERSION_NAME }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Create Release
       id: create_release
