@@ -38,7 +38,9 @@ import android.widget.CompoundButton;
 import android.widget.PopupWindow;
 import android.widget.Toast;
 import android.widget.Switch;
-
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.io.File;
 
 public class MainActivity extends AppCompatActivity implements IRegisterReceiver {
@@ -194,13 +196,15 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
         startActivityForResult(intent, REQUEST_CODE_PICK_MBTILES);
     }
     private void addMarkerToMap(double latitude, double longitude, float speed) {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault());
+            String currentDateAndTime = sdf.format(new Date());
 
             GeoPoint point = new GeoPoint(latitude, longitude);
             Marker startMarker = new Marker(mapView);
             startMarker.setPosition(point);
             startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
             startMarker.setIcon(getResources().getDrawable(R.drawable.maps_and_flags));
-            startMarker.setTitle("X: " + latitude + " Y: " + longitude + " speed (knot): " + speed * 1.94384);
+            startMarker.setTitle("X: " + latitude + " Y: " + longitude + " speed (knot): " + speed * 1.94384 + " date: "+ currentDateAndTime);
             mapView.getOverlays().add(startMarker);
             mapView.invalidate();
     }
@@ -221,7 +225,7 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
             File mbTileFile = new File(fileUri.getPath());
 
             // Use an MBTilesTileSource, assuming you have such a class that extends BitmapTileSourceBase.
-            ITileSource tileSource = new MBTilesTileSource(this, mbTileFile.getName(), 0, 19, 256, ".png");
+            ITileSource tileSource = new MBTilesTileSource(this, mbTileFile.getName(), 0, 18, 256, ".png");
             mapView.setTileSource(tileSource);
 
             // Update the map center and zoom level as needed
