@@ -199,7 +199,7 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
             Marker startMarker = new Marker(mapView);
             startMarker.setPosition(point);
             startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-            startMarker.setIcon(getResources().getDrawable(R.drawable.placeholder_filled_point));
+            startMarker.setIcon(getResources().getDrawable(R.drawable.maps_and_flags));
             startMarker.setTitle("X: " + latitude + " Y: " + longitude + " speed (knot): " + speed * 1.94384);
             mapView.getOverlays().add(startMarker);
             mapView.invalidate();
