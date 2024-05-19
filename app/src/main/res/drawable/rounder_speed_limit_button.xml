@@ -13,7 +13,7 @@
     <item android:top="10dp" android:bottom="10dp" android:left="10dp" android:right="10dp">
         <shape
             android:shape="oval">
-            <solid android:color="#FFFFFF"/> <!-- Couleur du cercle intérieur (blanc) -->
+            <solid android:color="@color/teal_200"/> <!-- Couleur du cercle intérieur (blanc) -->
         </shape>
     </item>
 </layer-list>

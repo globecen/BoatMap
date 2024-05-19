@@ -1,12 +1,16 @@
 package com.globecen.boatmap;
 
-import android.app.assist.AssistStructure;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
+
+import org.osmdroid.tileprovider.MapTileProviderBasic;
+import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.views.overlay.Marker;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,12 +21,21 @@ import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.views.MapView;
 import org.osmdroid.util.GeoPoint;
-
+import org.osmdroid.views.overlay.TilesOverlay;
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.PopupWindow;
 
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.widget.CompoundButton;
+import android.widget.PopupWindow;
 import android.widget.Toast;
 import android.widget.Switch;
 
@@ -40,9 +53,17 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
     private Marker userMarker;
     private Location userLocation;
     private Switch switchAddMarker;
-    private Switch switchMapSource; // Add this line
     private static final int REQUEST_CODE_PICK_MBTILES = 2;
-
+    private PopupWindow popupWindow;
+    private int[] boatIcons = {
+            R.drawable.ic_boat_1,
+            R.drawable.ic_boat_2,
+            R.drawable.ic_boat_3,
+            R.drawable.ic_boat_4,
+            R.drawable.ic_boat_5
+            // Add more boat icons as needed
+    };
+    private static final String PREF_SELECTED_ICON_ID = "selected_icon_id";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,12 +72,68 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
         Configuration.getInstance().load(this, getPreferences(MODE_PRIVATE));
         mapView = findViewById(R.id.mapView);
         userMarker = new Marker(mapView);
-        userMarker.setIcon(getResources().getDrawable(R.drawable.ic_locate_me));
+
+        SharedPreferences preferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+        int selectedIconId = preferences.getInt(PREF_SELECTED_ICON_ID, R.drawable.ic_boat_1); // Use default icon if no icon is saved
+        userMarker.setIcon(getResources().getDrawable(selectedIconId));
         // Initialize tileDir here
         File tileDir = new File(getExternalFilesDir(null), "osmdroid");
         mapView.getOverlays().add(userMarker);
         mapView.setTileSource(TileSourceFactory.MAPNIK);
         mapView.setBuiltInZoomControls(true);
+        XYTileSource openSeaMapTileSource = new XYTileSource(
+                "OpenSeaMap",
+                0,
+                18,
+                256,
+                ".png",
+                new String[]{"https://tiles.openseamap.org/seamark/"}
+        );
+        TilesOverlay openSeaMapTilesOverlay = new TilesOverlay(
+                new MapTileProviderBasic(this, openSeaMapTileSource),
+                this.getBaseContext()
+        );
+        mapView.getOverlays().add(openSeaMapTilesOverlay);
+
+
+        // Set up popup window
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View popupView = inflater.inflate(R.layout.popup_change_icon, null);
+        popupWindow = new PopupWindow(popupView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        // Set up list view in the popup
+        LinearLayout iconListContainer = popupView.findViewById(R.id.iconListContainer);
+
+        for (int iconResId : boatIcons) {
+            ImageView imageView = new ImageView(this);
+            imageView.setImageResource(iconResId);
+            imageView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            imageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // Change userMarker icon here based on clicked icon
+                    userMarker.setIcon(getResources().getDrawable(iconResId));
+                    // Save the selected icon ID to SharedPreferences
+                    SharedPreferences preferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+                    preferences.edit().putInt(PREF_SELECTED_ICON_ID, iconResId).apply();
+                    popupWindow.dismiss(); // Dismiss the popup after selecting an icon
+                }
+            });
+            iconListContainer.addView(imageView);
+        }
+
+        // Set up click listener for userMarker
+        userMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker, MapView mapView) {
+                // Show popup window near the map view
+                popupWindow.showAtLocation(mapView, Gravity.AXIS_CLIP, 0,200);
+                return true; // Consume the event
+            }
+        });
+
+
+
 
         switchAddMarker = findViewById(R.id.switchAddMarker);
         switchAddMarker.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -71,19 +148,6 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
             }
         });
 
-        switchMapSource = findViewById(R.id.switchMapSource); // Initialize the switch
-        switchMapSource.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    // Use offline map source
-                    switchToOfflineMap();
-                } else {
-                    // Use online map source
-                    switchToOnlineMap();
-                }
-            }
-        });
 
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
@@ -172,7 +236,19 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
     private void switchToOnlineMap() {
         mapView.setTileSource(TileSourceFactory.MAPNIK);
         mapView.getTileProvider().clearTileCache(); // Clear the tile cache
-
+        XYTileSource openSeaMapTileSource = new XYTileSource(
+                "OpenSeaMap",
+                0,
+                18,
+                256,
+                ".png",
+                new String[]{"https://tiles.openseamap.org/seamark/"}
+        );
+        TilesOverlay openSeaMapTilesOverlay = new TilesOverlay(
+                new MapTileProviderBasic(this, openSeaMapTileSource),
+                this.getBaseContext()
+        );
+        mapView.getOverlays().add(openSeaMapTilesOverlay);
         // You can also update the map center and zoom level as needed
         mapView.getController().setZoom(18); // Example zoom level
     }
@@ -180,6 +256,19 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
         mapView = findViewById(R.id.mapView);
         mapView.setTileSource(TileSourceFactory.MAPNIK);
         mapView.setBuiltInZoomControls(true);
+        XYTileSource openSeaMapTileSource = new XYTileSource(
+                "OpenSeaMap",
+                0,
+                18,
+                256,
+                ".png",
+                new String[]{"https://tiles.openseamap.org/seamark/"}
+        );
+        TilesOverlay openSeaMapTilesOverlay = new TilesOverlay(
+                new MapTileProviderBasic(this, openSeaMapTileSource),
+                this.getBaseContext()
+        );
+        mapView.getOverlays().add(openSeaMapTilesOverlay);
     }
 
     private void initLocationUpdates() {

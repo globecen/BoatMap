@@ -25,11 +25,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
-                <Switch
-                    android:id="@+id/switchMapSource"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Use Offline Map" />
 
                 <Space
                     android:layout_width="wrap_content"
@@ -65,7 +60,7 @@
                     android:background="@drawable/rounder_speed_limit_button"
                     android:gravity="center"
                     android:text="speed"
-                    android:textColor="#FFFEFE"
+                    android:textColor="@color/black"
                     android:textSize="20sp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toStartOf="@+id/locationButton"
