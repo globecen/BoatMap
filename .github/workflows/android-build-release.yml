@@ -1,67 +1,74 @@
-name: Android Build and Release
+name: Build et Release Android
 
 on:
   push:
     branches:
-      - master  # Change to your main branch name
+      - master  # Changez cela par le nom de votre branche principale
 
 permissions:
-  contents: write  # Add write permission for contents
+  contents: write  # Ajouter la permission d'écriture pour les contenus
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Récupérer le code
         uses: actions/checkout@v2
 
-      - name: Set up JDK
+      - name: Configurer le JDK
         uses: actions/setup-java@v2
         with:
-          java-version: '17'  # Use Java 17
+          java-version: '17'  # Utiliser Java 17
           distribution: 'adopt'
 
-      - name: Set up Android SDK
+      - name: Configurer l'Android SDK
         uses: android-actions/setup-android@v2
         with:
-          api-level: 30  # Adjust the API level as per your app requirements
-          build-tools: 30.0.3  # Adjust the build tools version as per your app requirements
+          api-level: 30  # Ajuster le niveau de l'API selon vos besoins
+          build-tools: 30.0.3  # Ajuster la version des outils de compilation selon vos besoins
 
-      - name: Build and package Android app
+      - name: Compiler et packager l'application Android
         run: |
           chmod +x ./gradlew
           ./gradlew assembleRelease
-        working-directory: ./  # Assuming gradlew is in the root directory
+        working-directory: ./  # Supposant que gradlew est dans le répertoire racine
 
-      - name: Get App VersionName
+      - name: Obtenir la version de l'application
         id: get_version_name
         run: |
           VERSION_NAME=$(grep 'versionName' app/build.gradle | sed -n 's/.*"\(.*\)".*/\1/p')
           echo "VERSION_NAME=${VERSION_NAME}" >> $GITHUB_ENV
         shell: bash
 
-      - name: Create Release Tag
+      - name: Créer un tag automatique
         id: create_tag
         run: |
           TAG_NAME="v${{ env.VERSION_NAME }}"
+          echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
+
+      - name: Pousser le tag
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
           git tag $TAG_NAME
           git push origin $TAG_NAME
         env:
+          TAG_NAME: ${{ env.TAG_NAME }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create GitHub Release
+      - name: Créer une release GitHub
         id: create_release
         uses: actions/create-release@v1
         with:
-          tag_name: ${{ steps.create_tag.outputs.tag_name }}
+          tag_name: ${{ env.TAG_NAME }}
           release_name: Release ${{ env.VERSION_NAME }}
           draft: false
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload APK to Release
+      - name: Télécharger l'APK sur la release
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
