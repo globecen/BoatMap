@@ -36,14 +36,14 @@ jobs:
 
       - name: Vérifier l'APK généré
         run: |
-          if [ ! -f app/build/outputs/apk/release/app-release.apk ]; then
+          if [ ! -f app/build/outputs/apk/release/app-release-unsigned.apk ]; then
             echo "APK not found!"
             exit 1
           fi
 
       - name: Renommer l'APK
         run: |
-          mv app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/BoatMap.apk
+          mv app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/BoatMap.apk
 
       - name: Obtenir la version de l'application
         id: get_version_name
