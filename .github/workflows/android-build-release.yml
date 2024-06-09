@@ -24,9 +24,6 @@ jobs:
 
       - name: Configurer l'Android SDK
         uses: android-actions/setup-android@v2
-        with:
-          api-level: 30  # Ajuster le niveau de l'API selon vos besoins
-          build-tools: 30.0.3  # Ajuster la version des outils de compilation selon vos besoins
 
       - name: Compiler et packager l'application Android
         run: |
@@ -58,8 +55,7 @@ jobs:
           TAG_NAME="v${{ env.VERSION_NAME }}"
           RELEASE_NAME="Release ${{ env.VERSION_NAME }}"
           REQUEST_BODY=$(jq -n --arg tag_name "$TAG_NAME" --arg target_commitish "$GITHUB_SHA" --arg name "$RELEASE_NAME" --arg body "Automated release for version $TAG_NAME" '{ tag_name: $tag_name, target_commitish: $target_commitish, name: $name, body: $body, draft: false, prerelease: false }')
-          RESPONSE=$(curl -s -X POST -H "Authorization: token ${{ secrets.BOATMAP_TOKEN}}" -H "Content-Type: application/json" -d "$REQUEST_BODY" "https://api.github.com/repos/${{ github.repository }}/releases")
-          echo "Response: $RESPONSE"
+          RESPONSE=$(curl -s -X POST -H "Authorization: token ${{ secrets.BOATMAP_TOKEN }}" -H "Content-Type: application/json" -d "$REQUEST_BODY" "https://api.github.com/repos/${{ github.repository }}/releases")
           UPLOAD_URL=$(echo "$RESPONSE" | jq -r .upload_url | sed -e "s/{?name,label}//")
           if [ "$UPLOAD_URL" == "null" ]; then
             echo "Failed to get upload URL"
@@ -67,12 +63,12 @@ jobs:
           fi
           echo "UPLOAD_URL=${UPLOAD_URL}" >> $GITHUB_ENV
         env:
-          GITHUB_TOKEN: ${{ secrets.BOATMAP_TOKEN}}
+          GITHUB_TOKEN: ${{ secrets.BOATMAP_TOKEN }}
           GITHUB_SHA: ${{ github.sha }}
 
       - name: Push APK to GitHub
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.BOATMAP_TOKEN }}
-          branch: main  # Changez cela par la branche où vous souhaitez pousser l'APK
+          branch: main
           directory: app/build/outputs/apk/release/
