@@ -3,7 +3,7 @@ name: Build et Release Android
 on:
   push:
     branches:
-      - master  # Changez cela par le nom de votre branche principale
+      - main  # Changer cela par le nom de votre branche principale
 
 permissions:
   contents: write  # Ajouter la permission d'écriture pour les contenus
