@@ -74,6 +74,6 @@ jobs:
         with:
           upload_url: ${{ env.UPLOAD_URL }}
           asset_path: app/build/outputs/apk/release/BoatMap.apk
-          asset_name: BoatMap-${{ env.VERSION_NAME }}.apk
-          asset_content_type: application/zip
+          asset_name: BoatMap.apk
+          asset_content_type: application/vnd.android.package-archive
 
