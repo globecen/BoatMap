@@ -41,6 +41,10 @@ jobs:
             exit 1
           fi
 
+      - name: Renommer l'APK
+        run: |
+          mv app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/BoatMap.apk
+
       - name: Obtenir la version de l'application
         id: get_version_name
         run: |
@@ -69,8 +73,8 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ env.UPLOAD_URL }}
-          asset_path: app/build/outputs/apk/release/app-release.apk
-          asset_name: app-release-${{ env.VERSION_NAME }}.apk
+          asset_path: app/build/outputs/apk/release/BoatMap.apk
+          asset_name: BoatMap-${{ env.VERSION_NAME }}.apk
           asset_content_type: application/vnd.android.package-archive
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
