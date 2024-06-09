@@ -66,8 +66,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.BOATMAP_TOKEN }}
           GITHUB_SHA: ${{ github.sha }}
 
-      - name: Push APK to GitHub Release
-        uses: sangatdesai/release-apk@main
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.BOATMAP_TOKEN }}
-          APP_FOLDER: app
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ env.UPLOAD_URL }}
+          asset_path: app/build/outputs/apk/release/BoatMap.apk
+          asset_name: BoatMap-${{ env.VERSION_NAME }}.apk
+          asset_content_type: application/zip
+
