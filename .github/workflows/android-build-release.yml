@@ -58,7 +58,7 @@ jobs:
           TAG_NAME="v${{ env.VERSION_NAME }}"
           RELEASE_NAME="Release ${{ env.VERSION_NAME }}"
           REQUEST_BODY=$(jq -n --arg tag_name "$TAG_NAME" --arg target_commitish "$GITHUB_SHA" --arg name "$RELEASE_NAME" --arg body "Automated release for version $TAG_NAME" '{ tag_name: $tag_name, target_commitish: $target_commitish, name: $name, body: $body, draft: false, prerelease: false }')
-          RESPONSE=$(curl -s -X POST -H "Authorization: token ${{ secrets.BOATMAP_TOKEN}}" -H "Content-Type: application/json" -d "$REQUEST_BODY" "https://api.github.com/repos/${{ github.repository }}/releases")
+          RESPONSE=$(curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN}}" -H "Content-Type: application/json" -d "$REQUEST_BODY" "https://api.github.com/repos/${{ github.repository }}/releases")
           UPLOAD_URL=$(echo "$RESPONSE" | jq -r .upload_url | sed -e "s/{?name,label}//")
           if [ "$UPLOAD_URL" == "null" ]; then
             echo "Failed to get upload URL"
@@ -66,7 +66,7 @@ jobs:
           fi
           echo "UPLOAD_URL=${UPLOAD_URL}" >> $GITHUB_ENV
         env:
-          GITHUB_TOKEN: ${{ secrets.BOATMAP_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_SHA: ${{ github.sha }}
 
       - name: Télécharger l'APK sur la release
@@ -77,4 +77,4 @@ jobs:
           asset_name: BoatMap-${{ env.VERSION_NAME }}.apk
           asset_content_type: application/vnd.android.package-archive
         env:
-          GITHUB_TOKEN: ${{ secrets.BOATMAP_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
