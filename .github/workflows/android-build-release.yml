@@ -1,4 +1,4 @@
-name: Build et Release Android
+name: Build et Release Android BoatMap
 
 on:
   push:
