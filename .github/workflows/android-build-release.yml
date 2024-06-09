@@ -41,37 +41,23 @@ jobs:
           echo "VERSION_NAME=${VERSION_NAME}" >> $GITHUB_ENV
         shell: bash
 
-      - name: Créer un tag automatique
-        id: create_tag
+      - name: Créer un tag et une release GitHub via l'API
+        id: create_tag_and_release
         run: |
           TAG_NAME="v${{ env.VERSION_NAME }}"
-          echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
-
-      - name: Pousser le tag
-        run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-          git tag $TAG_NAME
-          git push origin $TAG_NAME
-        env:
-          TAG_NAME: ${{ env.TAG_NAME }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Créer une release GitHub
-        id: create_release
-        uses: actions/create-release@v1
-        with:
-          tag_name: ${{ env.TAG_NAME }}
-          release_name: Release ${{ env.VERSION_NAME }}
-          draft: false
-          prerelease: false
+          RELEASE_NAME="Release ${{ env.VERSION_NAME }}"
+          REQUEST_BODY=$(jq -n --arg tag_name "$TAG_NAME" --arg target_commitish "$GITHUB_SHA" --arg name "$RELEASE_NAME" --arg body "Automated release for version $TAG_NAME" '{ tag_name: $tag_name, target_commitish: $target_commitish, name: $name, body: $body, draft: false, prerelease: false }')
+          RESPONSE=$(curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Content-Type: application/json" -d "$REQUEST_BODY" "https://api.github.com/repos/${{ github.repository }}/releases")
+          UPLOAD_URL=$(echo "$RESPONSE" | jq -r .upload_url | sed -e "s/{?name,label}//")
+          echo "UPLOAD_URL=${UPLOAD_URL}" >> $GITHUB_ENV
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_SHA: ${{ github.sha }}
 
       - name: Télécharger l'APK sur la release
         uses: actions/upload-release-asset@v1
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ env.UPLOAD_URL }}
           asset_path: app/build/outputs/apk/release/app-release.apk
           asset_name: app-release-${{ env.VERSION_NAME }}.apk
           asset_content_type: application/vnd.android.package-archive
