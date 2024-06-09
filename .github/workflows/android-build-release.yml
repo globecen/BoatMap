@@ -34,10 +34,6 @@ jobs:
           ./gradlew assembleRelease
         working-directory: ./  # Supposant que gradlew est dans le répertoire racine
 
-      - name: Test ls
-        run: |
-          ls app/build/outputs/apk/release/
-
       - name: Vérifier l'APK généré
         run: |
           if [ ! -f app/build/outputs/release/debug/app-release-unsigned.apk ]; then
