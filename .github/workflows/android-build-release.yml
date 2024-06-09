@@ -70,12 +70,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.BOATMAP_TOKEN}}
           GITHUB_SHA: ${{ github.sha }}
 
-      - name: Télécharger l'APK sur la release
-        uses: actions/upload-release-asset@v1
+      - name: Push APK to GitHub
+        uses: ad-m/github-push-action@master
         with:
-          upload_url: ${{ env.UPLOAD_URL }}
-          asset_path: app/build/outputs/apk/release/BoatMap.apk
-          asset_name: BoatMap-${{ env.VERSION_NAME }}.apk
-          asset_content_type: application/vnd.android.package-archive
-        env:
-          GITHUB_TOKEN: ${{ secrets.BOATMAP_TOKEN}}
+          github_token: ${{ secrets.BOATMAP_TOKEN }}
+          branch: main  # Changez cela par la branche où vous souhaitez pousser l'APK
+          directory: app/build/outputs/apk/release/
