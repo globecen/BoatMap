@@ -24,18 +24,15 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.overlay.TilesOverlay;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.PopupWindow;
 
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.widget.CompoundButton;
-import android.widget.PopupWindow;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Switch;
 import java.text.SimpleDateFormat;
@@ -287,7 +284,7 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
             @Override
             public void onLocationChanged(Location location) {
                 double speedMetersPerSecond = location.getSpeed();
-
+                updateCoordinatesTextView(location.getLatitude(), location.getLongitude());
                 if (displayInKnots) {
                     speedValue = speedMetersPerSecond * 1.94384;
                 } else {
@@ -324,7 +321,11 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
             }
         });
     }
-
+    private void updateCoordinatesTextView(double latitude, double longitude) {
+        TextView coordinatesTextView = findViewById(R.id.coordinatesTextView);
+        String coordinatesText = String.format(Locale.getDefault(), "Lat: %.6f, Lon: %.6f", latitude, longitude);
+        coordinatesTextView.setText(coordinatesText);
+    }
     private void updateSpeedButtonText() {
         speedButton.setText(String.format("%.2f %s", speedValue, displayInKnots ? "knots" : "km/h"));
     }
