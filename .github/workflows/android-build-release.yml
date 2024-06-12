@@ -1,55 +1,53 @@
-name: Build et Release Android
+name: Build and Release Android
 
 on:
   push:
     branches:
-      - master  # Changez cela par le nom de votre branche principale
+      - master  # Change this to your main branch if different
 
 permissions:
-  contents: write  # Ajouter la permission d'écriture pour les contenus
+  contents: write  # Provide write permission for contents
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Récupérer le code
+      - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Configurer le JDK
+      - name: Set up JDK
         uses: actions/setup-java@v2
         with:
-          java-version: '17'  # Utiliser Java 17
+          java-version: '17'
           distribution: 'adopt'
 
-      - name: Configurer l'Android SDK
+      - name: Set up Android SDK
         uses: android-actions/setup-android@v2
 
-      - name: Compiler et packager l'application Android
+      - name: Build and package the Android app
         run: |
           chmod +x ./gradlew
           ./gradlew assembleRelease
-        working-directory: ./  # Supposant que gradlew est dans le répertoire racine
 
-      - name: Vérifier l'APK généré
+      - name: Verify generated APK
         run: |
           if [ ! -f app/build/outputs/apk/release/app-release-unsigned.apk ]; then
             echo "APK not found!"
             exit 1
           fi
 
-      - name: Renommer l'APK
+      - name: Rename APK
         run: |
           mv app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/BoatMap.apk
 
-      - name: Obtenir la version de l'application
+      - name: Get app version
         id: get_version_name
         run: |
           VERSION_NAME=$(grep 'versionName' app/build.gradle | sed -n 's/.*"\(.*\)".*/\1/p')
           echo "VERSION_NAME=${VERSION_NAME}" >> $GITHUB_ENV
-        shell: bash
 
-      - name: Créer un tag et une release GitHub via l'API
+      - name: Create tag and GitHub release via API
         id: create_tag_and_release
         run: |
           TAG_NAME="v${{ env.VERSION_NAME }}"
@@ -69,11 +67,9 @@ jobs:
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         with:
-          upload_url: ${{ github.event.release.upload_url }}
+          upload_url: ${{ env.UPLOAD_URL }}
           asset_path: app/build/outputs/apk/release/BoatMap.apk
           asset_name: BoatMap.apk
           asset_content_type: application/vnd.android.package-archive
         env:
-          VERSION_NAME: 1.0.1
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
