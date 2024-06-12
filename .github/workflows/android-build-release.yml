@@ -67,5 +67,5 @@ jobs:
       - name: Upload apk
         uses: actions/upload-artifact@v2
         with:
-          name: debug apk
+          name: release apk
           path:  app/build/outputs/apk/release/BoatMap.apk
