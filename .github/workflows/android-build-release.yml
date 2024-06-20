@@ -65,7 +65,7 @@ jobs:
           GITHUB_SHA: ${{ github.sha }}
 
       - name: Upload apk
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: BoatMap.apk
           path:  app/build/outputs/apk/release/BoatMap.apk
