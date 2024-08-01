@@ -58,8 +58,7 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
             R.drawable.ic_boat_1,
             R.drawable.ic_boat_2,
             R.drawable.ic_boat_3,
-            R.drawable.ic_boat_4,
-            R.drawable.ic_boat_5
+            R.drawable.ic_boat_4
             // Add more boat icons as needed
     };
     private static final String PREF_SELECTED_ICON_ID = "selected_icon_id";
@@ -83,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
         XYTileSource openSeaMapTileSource = new XYTileSource(
                 "OpenSeaMap",
                 0,
-                18,
+                19,
                 256,
                 ".png",
                 new String[]{"https://tiles.openseamap.org/seamark/"}
@@ -126,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
             @Override
             public boolean onMarkerClick(Marker marker, MapView mapView) {
                 // Show popup window near the map view
-                popupWindow.showAtLocation(mapView, Gravity.AXIS_CLIP, 0,200);
+                popupWindow.showAtLocation(mapView, Gravity.AXIS_CLIP, 0,300);
                 return true; // Consume the event
             }
         });
@@ -170,7 +169,7 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
                 if (userLocation != null) {
                     GeoPoint userGeoPoint = new GeoPoint(userLocation.getLatitude(), userLocation.getLongitude());
                     mapView.getController().setCenter(userGeoPoint);
-                    mapView.getController().setZoom(18);
+                    mapView.getController().setZoom(19);
                 }
             }
         });
@@ -181,7 +180,7 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
         if (userLocation != null) {
             GeoPoint userGeoPoint = new GeoPoint(userLocation.getLatitude(), userLocation.getLongitude());
             mapView.getController().setCenter(userGeoPoint);
-            mapView.getController().setZoom(18);
+            mapView.getController().setZoom(19);
         }
     }
 
@@ -222,11 +221,11 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
             File mbTileFile = new File(fileUri.getPath());
 
             // Use an MBTilesTileSource, assuming you have such a class that extends BitmapTileSourceBase.
-            ITileSource tileSource = new MBTilesTileSource(this, mbTileFile.getName(), 0, 18, 256, ".png");
+            ITileSource tileSource = new MBTilesTileSource(this, mbTileFile.getName(), 0, 19, 256, ".png");
             mapView.setTileSource(tileSource);
 
             // Update the map center and zoom level as needed
-            mapView.getController().setZoom(18); // Example zoom level
+            mapView.getController().setZoom(19); // Example zoom level
         } catch (Exception e) {
             Toast.makeText(this, "Failed to load MBTiles file", Toast.LENGTH_LONG).show();
             e.printStackTrace();
@@ -240,7 +239,7 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
         XYTileSource openSeaMapTileSource = new XYTileSource(
                 "OpenSeaMap",
                 0,
-                18,
+                19,
                 256,
                 ".png",
                 new String[]{"https://tiles.openseamap.org/seamark/"}
@@ -251,7 +250,7 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
         );
         mapView.getOverlays().add(openSeaMapTilesOverlay);
         // You can also update the map center and zoom level as needed
-        mapView.getController().setZoom(18); // Example zoom level
+        mapView.getController().setZoom(19); // Example zoom level
     }
     private void initMapView() {
         mapView = findViewById(R.id.mapView);
@@ -260,7 +259,7 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
         XYTileSource openSeaMapTileSource = new XYTileSource(
                 "OpenSeaMap",
                 0,
-                18,
+                19,
                 256,
                 ".png",
                 new String[]{"https://tiles.openseamap.org/seamark/"}
@@ -277,7 +276,7 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
                 && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
-        mapView.getController().setZoom(18);
+        mapView.getController().setZoom(19);
         mapView.getController().setCenter(new GeoPoint(0, 0));
 
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, new LocationListener() {
