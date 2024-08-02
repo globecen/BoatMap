@@ -84,6 +84,7 @@
                     android:layout_width="0dp"
                     android:layout_height="59dp"
                     android:layout_weight="1"
+                    android:textColor="@color/black"
                     android:text="Locate Me" />
         </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

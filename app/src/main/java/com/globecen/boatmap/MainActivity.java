@@ -274,52 +274,68 @@ public class MainActivity extends AppCompatActivity implements IRegisterReceiver
     private void initLocationUpdates() {
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // Request location permissions if not granted
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
             return;
         }
+
         mapView.getController().setZoom(19);
         mapView.getController().setCenter(new GeoPoint(0, 0));
 
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, new LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                double speedMetersPerSecond = location.getSpeed();
-                updateCoordinatesTextView(location.getLatitude(), location.getLongitude());
-                if (displayInKnots) {
-                    speedValue = speedMetersPerSecond * 1.94384;
-                } else {
-                    speedValue = speedMetersPerSecond * 3.6;
-                }
-
-                userLocation = location;
-                if (userMarker != null) {
-                    userMarker.setPosition(new GeoPoint(location.getLatitude(), location.getLongitude()));
-                    mapView.invalidate();
-                }
-                GeoPoint userGeoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
-                mapView.getController().setCenter(userGeoPoint);
-
-                if (switchAddMarker.isChecked()) {
-                    addMarkerToMap(location.getLatitude(), location.getLongitude(), location.getSpeed());
-                }
-                updateSpeedButtonText();
-            }
-
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-                // Handle status changes, if needed
-            }
-
-            @Override
-            public void onProviderEnabled(String provider) {
-                // Handle provider enabled, if needed
-            }
-
-            @Override
-            public void onProviderDisabled(String provider) {
-                // Handle provider disabled, if needed
-            }
-        });
+        // Check if the GPS provider is available
+        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1, locationListener);
+        } else if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            // Fall back to the network provider if GPS is not available
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 1, locationListener);
+        } else {
+            // Show a message if no location provider is available
+            Toast.makeText(this, "No location provider available", Toast.LENGTH_LONG).show();
+        }
     }
+
+    // Define the location listener
+    private LocationListener locationListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(Location location) {
+            double speedMetersPerSecond = location.getSpeed();
+            updateCoordinatesTextView(location.getLatitude(), location.getLongitude());
+            if (displayInKnots) {
+                speedValue = speedMetersPerSecond * 1.94384;
+            } else {
+                speedValue = speedMetersPerSecond * 3.6;
+            }
+
+            userLocation = location;
+            if (userMarker != null) {
+                userMarker.setPosition(new GeoPoint(location.getLatitude(), location.getLongitude()));
+                mapView.invalidate();
+            }
+            GeoPoint userGeoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
+            mapView.getController().setCenter(userGeoPoint);
+
+            if (switchAddMarker.isChecked()) {
+                addMarkerToMap(location.getLatitude(), location.getLongitude(), location.getSpeed());
+            }
+            updateSpeedButtonText();
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+            // Handle status changes, if needed
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+            // Handle provider enabled, if needed
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+            // Handle provider disabled, if needed
+        }
+    };
+
     private void updateCoordinatesTextView(double latitude, double longitude) {
         TextView coordinatesTextView = findViewById(R.id.coordinatesTextView);
         String coordinatesText = String.format(Locale.getDefault(), "Lat: %.6f, Lon: %.6f", latitude, longitude);
